@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Физика Решатель</title>
+    <meta name="description" content="Приложение для решения физических задач с пошаговым решением">
+    <meta name="theme-color" content="#2196F3">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛</text></svg>">
+    <style>
+        :root {
+            --primary: #2196F3;
+            --primary-dark: #1976D2;
+            --secondary: #FF9800;
+            --light: #f5f5f5;
+            --dark: #333;
+            --success: #4CAF50;
+            --danger: #f44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e68900;
+        }
+        
+        .result {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .solution-step {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        
+        .install-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: none;
+            z-index: 1000;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>⚛ Физика Решатель</h1>
+            <p class="subtitle">Решение физических задач с пошаговым объяснением</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title">Выберите тип задачи</h2>
+            <div class="form-group">
+                <label for="problemType">Тип физической задачи:</label>
+                <select id="problemType">
+                    <option value="newton">Законы Ньютона</option>
+                    <option value="kinematics">Кинематика</option>
+                    <option value="energy">Энергия и работа</option>
+                    <option value="electrostatics">Электростатика</option>
+                    <option value="thermodynamics">Термодинамика</option>
+                    <option value="optics">Оптика</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="card" id="inputSection">
+            <h2 class="card-title">Введите известные величины</h2>
+            <div id="inputFields">
+                <!-- Поля ввода будут генерироваться динамически -->
+            </div>
+            <button id="solveBtn">Решить задачу</button>
+        </div>
+        
+        <div class="card" id="resultSection" style="display: none;">
+            <h2 class="card-title">Решение задачи</h2>
+            <div id="solutionSteps">
+                <!-- Шаги решения будут генерироваться динамически -->
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">Примеры задач</h2>
+            <div id="examples">
+                <div class="solution-step">
+                    <p><strong>Пример 1:</strong> Тело массой 5 кг движется с ускорением 3 м/с². Найдите силу, действующую на тело.</p>
+                    <button class="btn-secondary" onclick="loadExample('newton', {m: 5, a: 3})">Загрузить пример</button>
+                </div>
+                <div class="solution-step">
+                    <p><strong>Пример 2:</strong> Автомобиль разгоняется с 0 до 20 м/с за 5 секунд. Найдите ускорение и пройденный путь.</p>
+                    <button class="btn-secondary" onclick="loadExample('kinematics', {v0: 0, v: 20, t: 5})">Загрузить пример</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button id="installBtn" class="install-btn" title="Установить приложение">+</button>
+    
+    <footer>
+        <div class="container">
+            <p>Физика Решатель &copy; 2023 | PWA приложение для решения физических задач</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Service Worker регистрация
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // Установка PWA
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+        
+        installBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Пользователь принял установку');
+                    } else {
+                        console.log('Пользователь отклонил установку');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+            installBtn.style.display = 'none';
+        });
+        
+        // Логика приложения
+        const problemTypeSelect = document.getElementById('problemType');
+        const inputFieldsDiv = document.getElementById('inputFields');
+        const solveBtn = document.getElementById('solveBtn');
+        const resultSection = document.getElementById('resultSection');
+        const solutionStepsDiv = document.getElementById('solutionSteps');
+        
+        // Определение полей ввода для разных типов задач
+        const problemFields = {
+            newton: [
+                { id: 'm', label: 'Масса (кг)', unit: 'кг' },
+                { id: 'a', label: 'Ускорение (м/с²)', unit: 'м/с²' },
+                { id: 'F', label: 'Сила (Н)', unit: 'Н' }
+            ],
+            kinematics: [
+                { id: 'v0', label: 'Начальная скорость (м/с)', unit: 'м/с' },
+                { id: 'v', label: 'Конечная скорость (м/с)', unit: 'м/с' },
+                { id: 'a', label: 'Ускорение (м/с²)', unit: 'м/с²' },
+                { id: 't', label: 'Время (с)', unit: 'с' },
+                { id: 's', label: 'Путь (м)', unit: 'м' }
+            ],
+            energy: [
+                { id: 'm', label: 'Масса (кг)', unit: 'кг' },
+                { id: 'h', label: 'Высота (м)', unit: 'м' },
+                { id: 'v', label: 'Скорость (м/с)', unit: 'м/с' },
+                { id: 'E', label: 'Энергия (Дж)', unit: 'Дж' }
+            ],
+            electrostatics: [
+                { id: 'q1', label: 'Заряд 1 (Кл)', unit: 'Кл' },
+                { id: 'q2', label: 'Заряд 2 (Кл)', unit: 'Кл' },
+                { id: 'r', label: 'Расстояние (м)', unit: 'м' },
+                { id: 'F', label: 'Сила (Н)', unit: 'Н' }
+            ],
+            thermodynamics: [
+                { id: 'm', label: 'Масса (кг)', unit: 'кг' },
+                { id: 'c', label: 'Удельная теплоемкость (Дж/кг·К)', unit: 'Дж/кг·К' },
+                { id: 'ΔT', label: 'Изменение температуры (К)', unit: 'К' },
+                { id: 'Q', label: 'Теплота (Дж)', unit: 'Дж' }
+            ],
+            optics: [
+                { id: 'f', label: 'Фокусное расстояние (м)', unit: 'м' },
+                { id: 'd_o', label: 'Расстояние до объекта (м)', unit: 'м' },
+                { id: 'd_i', label: 'Расстояние до изображения (м)', unit: 'м' }
+            ]
+        };
+        
+        // Генерация полей ввода при изменении типа задачи
+        problemTypeSelect.addEventListener('change', generateInputFields);
+        
+        function generateInputFields() {
+            const problemType = problemTypeSelect.value;
+            const fields = problemFields[problemType];
+            
+            inputFieldsDiv.innerHTML = '';
+            
+            fields.forEach(field => {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = field.label;
+                label.htmlFor = field.id;
+                
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = field.id;
+                input.placeholder = `Введите ${field.label.toLowerCase()}`;
+                input.step = 'any';
+                
+                fieldDiv.appendChild(label);
+                fieldDiv.appendChild(input);
+                inputFieldsDiv.appendChild(fieldDiv);
+            });
+        }
+        
+        // Инициализация полей ввода
+        generateInputFields();
+        
+        // Решение задачи
+        solveBtn.addEventListener('click', solveProblem);
+        
+        function solveProblem() {
+            const problemType = problemTypeSelect.value;
+            const inputs = {};
+            
+            // Сбор введенных данных
+            problemFields[problemType].forEach(field => {
+                const inputElement = document.getElementById(field.id);
+                inputs[field.id] = inputElement.value ? parseFloat(inputElement.value) : null;
+            });
+            
+            // Проверка, что достаточно данных для решения
+            const knownValues = Object.values(inputs).filter(val => val !== null).length;
+            if (knownValues < 2) {
+                alert('Введите как минимум два известных значения для решения задачи.');
+                return;
+            }
+            
+            // Решение задачи в зависимости от типа
+            let solution;
+            switch (problemType) {
+                case 'newton':
+                    solution = solveNewtonProblem(inputs);
+                    break;
+                case 'kinematics':
+                    solution = solveKinematicsProblem(inputs);
+                    break;
+                case 'energy':
+                    solution = solveEnergyProblem(inputs);
+                    break;
+                case 'electrostatics':
+                    solution = solveElectrostaticsProblem(inputs);
+                    break;
+                case 'thermodynamics':
+                    solution = solveThermodynamicsProblem(inputs);
+                    break;
+                case 'optics':
+                    solution = solveOpticsProblem(inputs);
+                    break;
+                default:
+                    solution = { error: 'Неизвестный тип задачи' };
+            }
+            
+            // Отображение решения
+            displaySolution(solution);
+        }
+        
+        // Функции решения задач
+        function solveNewtonProblem(inputs) {
+            const { m, a, F } = inputs;
+            const steps = [];
+            
+            steps.push({
+                text: 'Используем второй закон Ньютона: F = m × a',
+                formula: 'F = m × a'
+            });
+            
+            if (F === null) {
+                const result = m * a;
+                steps.push({
+                    text: `Подставляем известные значения: F = ${m} кг × ${a} м/с²`,
+                    formula: `F = ${m} × ${a}`
+                });
+                steps.push({
+                    text: `Вычисляем силу: F = ${result} Н`,
+                    formula: `F = ${result} Н`
+                });
+                
+                return {
+                    type: 'newton',
+                    result: { F: result },
+                    steps: steps
+                };
+            } else if (m === null) {
+                const result = F / a;
+                steps.push({
+                    text: `Выражаем массу: m = F / a`,
+                    formula: 'm = F / a'
+                });
+                steps.push({
+                    text: `Подставляем известные значения: m = ${F} Н / ${a} м/с²`,
+                    formula: `m = ${F} / ${a}`
+                });
+                steps.push({
+                    text: `Вычисляем массу: m = ${result} кг`,
+                    formula: `m = ${result} кг`
+                });
+                
+                return {
+                    type: 'newton',
+                    result: { m: result },
+                    steps: steps
+                };
+            } else if (a === null) {
+                const result = F / m;
+                steps.push({
+                    text: `Выражаем ускорение: a = F / m`,
+                    formula: 'a = F / m'
+                });
+                steps.push({
+                    text: `Подставляем известные значения: a = ${F} Н / ${m} кг`,
+                    formula: `a = ${F} / ${m}`
+                });
+                steps.push({
+                    text: `Вычисляем ускорение: a = ${result} м/с²`,
+                    formula: `a = ${result} м/с²`
+                });
+                
+                return {
+                    type: 'newton',
+                    result: { a: result },
+                    steps: steps
+                };
+            }
+        }
+        
+        function solveKinematicsProblem(inputs) {
+            const { v0, v, a, t, s } = inputs;
+            const steps = [];
+            const results = {};
+            
+            // Определяем, что нужно найти
+            const unknowns = [];
+            if (v0 === null) unknowns.push('v0');
+            if (v === null) unknowns.push('v');
+            if (a === null) unknowns.push('a');
+            if (t === null) unknowns.push('t');
+            if (s === null) unknowns.push('s');
+            
+            // Простой случай: равномерное движение
+            if (a === 0 || a === null) {
+                if (v !== null && t !== null && s === null) {
+                    const result = v * t;
+                    steps.push({
+                        text: 'При равномерном движении путь вычисляется по формуле: s = v × t',
+                        formula: 's = v × t'
+                    });
+                    steps.push({
+                        text: `Подставляем известные значения: s = ${v} м/с × ${t} с`,
+                        formula: `s = ${v} × ${t}`
+                    });
+                    steps.push({
+                        text: `Вычисляем путь: s = ${result} м`,
+                        formula: `s = ${result} м`
+                    });
+                    
+                    results.s = result;
+                }
+            }
+            // Случай равноускоренного движения
+            else {
+                if (v0 !== null && a !== null && t !== null && v === null) {
+                    const result = v0 + a * t;
+                    steps.push({
+                        text: 'Скорость при равноускоренном движении: v = v₀ + a × t',
+                        formula: 'v = v₀ + a × t'
+                    });
+                    steps.push({
+                        text: `Подставляем известные значения: v = ${v0} м/с + ${a} м/с² × ${t} с`,
+                        formula: `v = ${v0} + ${a} × ${t}`
+                    });
+                    steps.push({
+                        text: `Вычисляем скорость: v = ${result} м/с`,
+                        formula: `v = ${result} м/с`
+                    });
+                    
+                    results.v = result;
+                }
+            }
+            
+            return {
+                type: 'kinematics',
+                result: results,
+                steps: steps
+            };
+        }
+        
+        function solveEnergyProblem(inputs) {
+            // Упрощенная реализация для демонстрации
+            const { m, h, v, E } = inputs;
+            const steps = [];
+            const results = {};
+            
+            if (m !== null && h !== null && E === null) {
+                const g = 9.8; // ускорение свободного падения
+                const result = m * g * h;
+                steps.push({
+                    text: 'Потенциальная энергия вычисляется по формуле: E = m × g × h',
+                    formula: 'E = m × g × h'
+                });
+                steps.push({
+                    text: `Подставляем известные значения: E = ${m} кг × 9.8 м/с² × ${h} м`,
+                    formula: `E = ${m} × 9.8 × ${h}`
+                });
+                steps.push({
+                    text: `Вычисляем энергию: E = ${result.toFixed(2)} Дж`,
+                    formula: `E = ${result.toFixed(2)} Дж`
+                });
+                
+                results.E = result;
+            }
+            
+            return {
+                type: 'energy',
+                result: results,
+                steps: steps
+            };
+        }
+        
+        function solveElectrostaticsProblem(inputs) {
+            // Упрощенная реализация для демонстрации
+            const { q1, q2, r, F } = inputs;
+            const steps = [];
+            const results = {};
+            const k = 9e9; // постоянная Кулона
+            
+            if (q1 !== null && q2 !== null && r !== null && F === null) {
+                const result = k * Math.abs(q1 * q2) / (r * r);
+                steps.push({
+                    text: 'Закон Кулона: F = k × |q₁ × q₂| / r²',
+                    formula: 'F = k × |q₁ × q₂| / r²'
+                });
+                steps.push({
+                    text: `Подставляем известные значения: F = 9×10⁹ × |${q1} × ${q2}| / ${r}²`,
+                    formula: `F = 9×10⁹ × |${q1} × ${q2}| / ${r}²`
+                });
+                steps.push({
+                    text: `Вычисляем силу: F = ${result.toExponential(2)} Н`,
+                    formula: `F = ${result.toExponential(2)} Н`
+                });
+                
+                results.F = result;
+            }
+            
+            return {
+                type: 'electrostatics',
+                result: results,
+                steps: steps
+            };
+        }
+        
+        function solveThermodynamicsProblem(inputs) {
+            // Упрощенная реализация для демонстрации
+            const { m, c, ΔT, Q } = inputs;
+            const steps = [];
+            const results = {};
+            
+            if (m !== null && c !== null && ΔT !== null && Q === null) {
+                const result = m * c * ΔT;
+                steps.push({
+                    text: 'Количество теплоты: Q = m × c × ΔT',
+                    formula: 'Q = m × c × ΔT'
+                });
+                steps.push({
+                    text: `Подставляем известные значения: Q = ${m} кг × ${c} Дж/кг·К × ${ΔT} К`,
+                    formula: `Q = ${m} × ${c} × ${ΔT}`
+                });
+                steps.push({
+                    text: `Вычисляем теплоту: Q = ${result} Дж`,
+                    formula: `Q = ${result} Дж`
+                });
+                
+                results.Q = result;
+            }
+            
+            return {
+                type: 'thermodynamics',
+                result: results,
+                steps: steps
+            };
+        }
+        
+        function solveOpticsProblem(inputs) {
+            // Упрощенная реализация для демонстрации
+            const { f, d_o, d_i } = inputs;
+            const steps = [];
+            const results = {};
+            
+            if (f !== null && d_o !== null && d_i === null) {
+                const result = 1 / (1/f - 1/d_o);
+                steps.push({
+                    text: 'Формула тонкой линзы: 1/f = 1/dₒ + 1/dᵢ',
+                    formula: '1/f = 1/dₒ + 1/dᵢ'
+                });
+                steps.push({
+                    text: `Выражаем dᵢ: dᵢ = 1 / (1/f - 1/dₒ)`,
+                    formula: 'dᵢ = 1 / (1/f - 1/dₒ)'
+                });
+                steps.push({
+                    text: `Подставляем известные значения: dᵢ = 1 / (1/${f} - 1/${d_o})`,
+                    formula: `dᵢ = 1 / (1/${f} - 1/${d_o})`
+                });
+                steps.push({
+                    text: `Вычисляем расстояние до изображения: dᵢ = ${result.toFixed(2)} м`,
+                    formula: `dᵢ = ${result.toFixed(2)} м`
+                });
+                
+                results.d_i = result;
+            }
+            
+            return {
+                type: 'optics',
+                result: results,
+                steps: steps
+            };
+        }
+        
+        // Отображение решения
+        function displaySolution(solution) {
+            solutionStepsDiv.innerHTML = '';
+            
+            if (solution.error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'solution-step';
+                errorDiv.style.backgroundColor = '#ffebee';
+                errorDiv.style.borderLeft = '4px solid var(--danger)';
+                errorDiv.textContent = solution.error;
+                solutionStepsDiv.appendChild(errorDiv);
+            } else {
+                // Отображаем шаги решения
+                solution.steps.forEach(step => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'solution-step';
+                    
+                    const textP = document.createElement('p');
+                    textP.textContent = step.text;
+                    stepDiv.appendChild(textP);
+                    
+                    if (step.formula) {
+                        const formulaDiv = document.createElement('div');
+                        formulaDiv.className = 'formula';
+                        formulaDiv.textContent = step.formula;
+                        stepDiv.appendChild(formulaDiv);
+                    }
+                    
+                    solutionStepsDiv.appendChild(stepDiv);
+                });
+                
+                // Отображаем итоговый результат
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result';
+                
+                let resultText = 'Результат: ';
+                const resultEntries = Object.entries(solution.result);
+                resultEntries.forEach(([key, value], index) => {
+                    const field = problemFields[solution.type].find(f => f.id === key);
+                    if (field) {
+                        resultText += `${field.label}: ${value} ${field.unit}`;
+                        if (index < resultEntries.length - 1) {
+                            resultText += ', ';
+                        }
+                    }
+                });
+                
+                resultDiv.textContent = resultText;
+                solutionStepsDiv.appendChild(resultDiv);
+            }
+            
+            resultSection.style.display = 'block';
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Загрузка примера
+        function loadExample(problemType, values) {
+            problemTypeSelect.value = problemType;
+            generateInputFields();
+            
+            // Заполняем поля значениями из примера
+            for (const [key, value] of Object.entries(values)) {
+                const input = document.getElementById(key);
+                if (input) {
+                    input.value = value;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
