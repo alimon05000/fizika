@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Физика Решатель</title>
-    <meta name="description" content="Приложение для решения физических задач с пошаговым решением">
+    <title>Универсальный Физический Решатель</title>
+    <meta name="description" content="Приложение для решения любых физических задач с пошаговым решением">
     <meta name="theme-color" content="#2196F3">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛</text></svg>">
@@ -17,6 +17,7 @@
             --dark: #333;
             --success: #4CAF50;
             --danger: #f44336;
+            --warning: #ffc107;
         }
         
         * {
@@ -33,7 +34,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -101,7 +102,6 @@
             font-size: 1rem;
             font-weight: 500;
             transition: background-color 0.3s;
-            width: 100%;
         }
         
         button:hover {
@@ -114,6 +114,14 @@
         
         .btn-secondary:hover {
             background-color: #e68900;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
         }
         
         .result {
@@ -139,6 +147,35 @@
             padding: 10px;
             background-color: #f0f0f0;
             border-radius: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .variable-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .variable-name {
+            flex: 1;
+            font-weight: bold;
+        }
+        
+        .variable-value {
+            flex: 2;
+        }
+        
+        .variable-unit {
+            flex: 1;
+        }
+        
+        .variable-actions {
+            flex: 1;
+            display: flex;
+            gap: 5px;
         }
         
         .install-btn {
@@ -166,6 +203,22 @@
             font-size: 0.9rem;
         }
         
+        .formula-db {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .formula-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        
+        .formula-item:hover {
+            background-color: #f0f0f0;
+        }
+        
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
@@ -174,39 +227,67 @@
             h1 {
                 font-size: 1.8rem;
             }
+            
+            .variable-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .variable-name, .variable-value, .variable-unit, .variable-actions {
+                width: 100%;
+                margin-bottom: 5px;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>⚛ Физика Решатель</h1>
-            <p class="subtitle">Решение физических задач с пошаговым объяснением</p>
+            <h1>⚛ Универсальный Физический Решатель</h1>
+            <p class="subtitle">Решение любых физических задач с пошаговым объяснением</p>
         </div>
     </header>
     
     <div class="container">
         <div class="card">
-            <h2 class="card-title">Выберите тип задачи</h2>
+            <h2 class="card-title">База физических формул</h2>
             <div class="form-group">
-                <label for="problemType">Тип физической задачи:</label>
-                <select id="problemType">
-                    <option value="newton">Законы Ньютона</option>
-                    <option value="kinematics">Кинематика</option>
-                    <option value="energy">Энергия и работа</option>
-                    <option value="electrostatics">Электростатика</option>
-                    <option value="thermodynamics">Термодинамика</option>
-                    <option value="optics">Оптика</option>
-                </select>
+                <label for="formulaSearch">Поиск формулы:</label>
+                <input type="text" id="formulaSearch" placeholder="Введите название формулы или переменной...">
+            </div>
+            <div class="formula-db" id="formulaDatabase">
+                <!-- Формулы будут загружены динамически -->
             </div>
         </div>
         
-        <div class="card" id="inputSection">
-            <h2 class="card-title">Введите известные величины</h2>
-            <div id="inputFields">
-                <!-- Поля ввода будут генерироваться динамически -->
+        <div class="card">
+            <h2 class="card-title">Создание задачи</h2>
+            <div class="form-group">
+                <label for="newVariableName">Название переменной:</label>
+                <input type="text" id="newVariableName" placeholder="Например: F, m, a, v...">
             </div>
-            <button id="solveBtn">Решить задачу</button>
+            <div class="form-group">
+                <label for="newVariableValue">Значение (оставьте пустым для неизвестной):</label>
+                <input type="number" id="newVariableValue" placeholder="Числовое значение" step="any">
+            </div>
+            <div class="form-group">
+                <label for="newVariableUnit">Единица измерения:</label>
+                <input type="text" id="newVariableUnit" placeholder="Например: Н, кг, м/с²...">
+            </div>
+            <button id="addVariableBtn">Добавить переменную</button>
+        </div>
+        
+        <div class="card" id="variablesSection">
+            <h2 class="card-title">Переменные задачи</h2>
+            <div id="variablesList">
+                <!-- Переменные будут добавляться динамически -->
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">Решение</h2>
+            <button id="solveBtn" style="width: 100%; margin-bottom: 15px;">Решить задачу</button>
+            <button id="clearBtn" class="btn-danger" style="width: 100%;">Очистить все</button>
         </div>
         
         <div class="card" id="resultSection" style="display: none;">
@@ -215,31 +296,267 @@
                 <!-- Шаги решения будут генерироваться динамически -->
             </div>
         </div>
-        
-        <div class="card">
-            <h2 class="card-title">Примеры задач</h2>
-            <div id="examples">
-                <div class="solution-step">
-                    <p><strong>Пример 1:</strong> Тело массой 5 кг движется с ускорением 3 м/с². Найдите силу, действующую на тело.</p>
-                    <button class="btn-secondary" onclick="loadExample('newton', {m: 5, a: 3})">Загрузить пример</button>
-                </div>
-                <div class="solution-step">
-                    <p><strong>Пример 2:</strong> Автомобиль разгоняется с 0 до 20 м/с за 5 секунд. Найдите ускорение и пройденный путь.</p>
-                    <button class="btn-secondary" onclick="loadExample('kinematics', {v0: 0, v: 20, t: 5})">Загрузить пример</button>
-                </div>
-            </div>
-        </div>
     </div>
     
     <button id="installBtn" class="install-btn" title="Установить приложение">+</button>
     
     <footer>
         <div class="container">
-            <p>Физика Решатель &copy; 2023 | PWA приложение для решения физических задач</p>
+            <p>Универсальный Физический Решатель &copy; 2023 | PWA приложение для решения любых физических задач</p>
         </div>
     </footer>
     
     <script>
+        // База физических формул
+        const physicsFormulas = [
+            {
+                name: "Второй закон Ньютона",
+                formula: "F = m × a",
+                description: "Сила равна произведению массы на ускорение",
+                variables: [
+                    { symbol: "F", name: "Сила", unit: "Н" },
+                    { symbol: "m", name: "Масса", unit: "кг" },
+                    { symbol: "a", name: "Ускорение", unit: "м/с²" }
+                ]
+            },
+            {
+                name: "Закон всемирного тяготения",
+                formula: "F = G × (m₁ × m₂) / r²",
+                description: "Сила гравитационного притяжения между двумя телами",
+                variables: [
+                    { symbol: "F", name: "Сила притяжения", unit: "Н" },
+                    { symbol: "G", name: "Гравитационная постоянная", unit: "Н·м²/кг²", value: "6.67430e-11" },
+                    { symbol: "m₁", name: "Масса первого тела", unit: "кг" },
+                    { symbol: "m₂", name: "Масса второго тела", unit: "кг" },
+                    { symbol: "r", name: "Расстояние между центрами", unit: "м" }
+                ]
+            },
+            {
+                name: "Кинетическая энергия",
+                formula: "E_k = (m × v²) / 2",
+                description: "Энергия движущегося тела",
+                variables: [
+                    { symbol: "E_k", name: "Кинетическая энергия", unit: "Дж" },
+                    { symbol: "m", name: "Масса", unit: "кг" },
+                    { symbol: "v", name: "Скорость", unit: "м/с" }
+                ]
+            },
+            {
+                name: "Потенциальная энергия",
+                formula: "E_p = m × g × h",
+                description: "Потенциальная энергия в гравитационном поле",
+                variables: [
+                    { symbol: "E_p", name: "Потенциальная энергия", unit: "Дж" },
+                    { symbol: "m", name: "Масса", unit: "кг" },
+                    { symbol: "g", name: "Ускорение свободного падения", unit: "м/с²", value: "9.81" },
+                    { symbol: "h", name: "Высота", unit: "м" }
+                ]
+            },
+            {
+                name: "Импульс",
+                formula: "p = m × v",
+                description: "Импульс тела",
+                variables: [
+                    { symbol: "p", name: "Импульс", unit: "кг·м/с" },
+                    { symbol: "m", name: "Масса", unit: "кг" },
+                    { symbol: "v", name: "Скорость", unit: "м/с" }
+                ]
+            },
+            {
+                name: "Закон Кулона",
+                formula: "F = k × (|q₁ × q₂|) / r²",
+                description: "Сила электростатического взаимодействия",
+                variables: [
+                    { symbol: "F", name: "Сила взаимодействия", unit: "Н" },
+                    { symbol: "k", name: "Постоянная Кулона", unit: "Н·м²/Кл²", value: "8.987551787e9" },
+                    { symbol: "q₁", name: "Заряд первого тела", unit: "Кл" },
+                    { symbol: "q₂", name: "Заряд второго тела", unit: "Кл" },
+                    { symbol: "r", name: "Расстояние между зарядами", unit: "м" }
+                ]
+            },
+            {
+                name: "Напряженность электрического поля",
+                formula: "E = F / q",
+                description: "Напряженность электрического поля",
+                variables: [
+                    { symbol: "E", name: "Напряженность", unit: "В/м" },
+                    { symbol: "F", name: "Сила", unit: "Н" },
+                    { symbol: "q", name: "Заряд", unit: "Кл" }
+                ]
+            },
+            {
+                name: "Потенциал электрического поля",
+                formula: "φ = k × q / r",
+                description: "Потенциал точечного заряда",
+                variables: [
+                    { symbol: "φ", name: "Потенциал", unit: "В" },
+                    { symbol: "k", name: "Постоянная Кулона", unit: "Н·м²/Кл²", value: "8.987551787e9" },
+                    { symbol: "q", name: "Заряд", unit: "Кл" },
+                    { symbol: "r", name: "Расстояние", unit: "м" }
+                ]
+            },
+            {
+                name: "Электроемкость",
+                formula: "C = q / U",
+                description: "Электроемкость конденсатора",
+                variables: [
+                    { symbol: "C", name: "Электроемкость", unit: "Ф" },
+                    { symbol: "q", name: "Заряд", unit: "Кл" },
+                    { symbol: "U", name: "Напряжение", unit: "В" }
+                ]
+            },
+            {
+                name: "Энергия конденсатора",
+                formula: "W = (C × U²) / 2",
+                description: "Энергия заряженного конденсатора",
+                variables: [
+                    { symbol: "W", name: "Энергия", unit: "Дж" },
+                    { symbol: "C", name: "Электроемкость", unit: "Ф" },
+                    { symbol: "U", name: "Напряжение", unit: "В" }
+                ]
+            },
+            {
+                name: "Закон Ома",
+                formula: "I = U / R",
+                description: "Сила тока в цепи",
+                variables: [
+                    { symbol: "I", name: "Сила тока", unit: "А" },
+                    { symbol: "U", name: "Напряжение", unit: "В" },
+                    { symbol: "R", name: "Сопротивление", unit: "Ом" }
+                ]
+            },
+            {
+                name: "Мощность электрического тока",
+                formula: "P = U × I",
+                description: "Мощность электрического тока",
+                variables: [
+                    { symbol: "P", name: "Мощность", unit: "Вт" },
+                    { symbol: "U", name: "Напряжение", unit: "В" },
+                    { symbol: "I", name: "Сила тока", unit: "А" }
+                ]
+            },
+            {
+                name: "Закон Джоуля-Ленца",
+                formula: "Q = I² × R × t",
+                description: "Количество теплоты, выделяемое проводником",
+                variables: [
+                    { symbol: "Q", name: "Количество теплоты", unit: "Дж" },
+                    { symbol: "I", name: "Сила тока", unit: "А" },
+                    { symbol: "R", name: "Сопротивление", unit: "Ом" },
+                    { symbol: "t", name: "Время", unit: "с" }
+                ]
+            },
+            {
+                name: "Уравнение движения с постоянным ускорением",
+                formula: "v = v₀ + a × t",
+                description: "Скорость при равноускоренном движении",
+                variables: [
+                    { symbol: "v", name: "Конечная скорость", unit: "м/с" },
+                    { symbol: "v₀", name: "Начальная скорость", unit: "м/с" },
+                    { symbol: "a", name: "Ускорение", unit: "м/с²" },
+                    { symbol: "t", name: "Время", unit: "с" }
+                ]
+            },
+            {
+                name: "Путь при равноускоренном движении",
+                formula: "s = v₀ × t + (a × t²) / 2",
+                description: "Путь при равноускоренном движении",
+                variables: [
+                    { symbol: "s", name: "Путь", unit: "м" },
+                    { symbol: "v₀", name: "Начальная скорость", unit: "м/с" },
+                    { symbol: "a", name: "Ускорение", unit: "м/с²" },
+                    { symbol: "t", name: "Время", unit: "с" }
+                ]
+            },
+            {
+                name: "Связь скорости и пути",
+                formula: "v² = v₀² + 2 × a × s",
+                description: "Связь между скоростью и путем при равноускоренном движении",
+                variables: [
+                    { symbol: "v", name: "Конечная скорость", unit: "м/с" },
+                    { symbol: "v₀", name: "Начальная скорость", unit: "м/с" },
+                    { symbol: "a", name: "Ускорение", unit: "м/с²" },
+                    { symbol: "s", name: "Путь", unit: "м" }
+                ]
+            },
+            {
+                name: "Период колебаний пружинного маятника",
+                formula: "T = 2π × √(m / k)",
+                description: "Период колебаний пружинного маятника",
+                variables: [
+                    { symbol: "T", name: "Период", unit: "с" },
+                    { symbol: "π", name: "Число Пи", unit: "", value: "3.14159" },
+                    { symbol: "m", name: "Масса", unit: "кг" },
+                    { symbol: "k", name: "Коэффициент жесткости", unit: "Н/м" }
+                ]
+            },
+            {
+                name: "Период колебаний математического маятника",
+                formula: "T = 2π × √(l / g)",
+                description: "Период колебаний математического маятника",
+                variables: [
+                    { symbol: "T", name: "Период", unit: "с" },
+                    { symbol: "π", name: "Число Пи", unit: "", value: "3.14159" },
+                    { symbol: "l", name: "Длина маятника", unit: "м" },
+                    { symbol: "g", name: "Ускорение свободного падения", unit: "м/с²", value: "9.81" }
+                ]
+            },
+            {
+                name: "Уравнение Менделеева-Клапейрона",
+                formula: "P × V = (m / μ) × R × T",
+                description: "Уравнение состояния идеального газа",
+                variables: [
+                    { symbol: "P", name: "Давление", unit: "Па" },
+                    { symbol: "V", name: "Объем", unit: "м³" },
+                    { symbol: "m", name: "Масса газа", unit: "кг" },
+                    { symbol: "μ", name: "Молярная масса", unit: "кг/моль" },
+                    { symbol: "R", name: "Универсальная газовая постоянная", unit: "Дж/(моль·К)", value: "8.314" },
+                    { symbol: "T", name: "Температура", unit: "К" }
+                ]
+            },
+            {
+                name: "Первый закон термодинамики",
+                formula: "Q = ΔU + A",
+                description: "Закон сохранения энергии в термодинамике",
+                variables: [
+                    { symbol: "Q", name: "Количество теплоты", unit: "Дж" },
+                    { symbol: "ΔU", name: "Изменение внутренней энергии", unit: "Дж" },
+                    { symbol: "A", name: "Работа", unit: "Дж" }
+                ]
+            },
+            {
+                name: "Формула тонкой линзы",
+                formula: "1 / F = 1 / d + 1 / f",
+                description: "Формула тонкой линзы",
+                variables: [
+                    { symbol: "F", name: "Фокусное расстояние", unit: "м" },
+                    { symbol: "d", name: "Расстояние до предмета", unit: "м" },
+                    { symbol: "f", name: "Расстояние до изображения", unit: "м" }
+                ]
+            },
+            {
+                name: "Закон Стефана-Больцмана",
+                formula: "P = σ × S × T⁴",
+                description: "Закон излучения абсолютно черного тела",
+                variables: [
+                    { symbol: "P", name: "Мощность излучения", unit: "Вт" },
+                    { symbol: "σ", name: "Постоянная Стефана-Больцмана", unit: "Вт/(м²·К⁴)", value: "5.670367e-8" },
+                    { symbol: "S", name: "Площадь поверхности", unit: "м²" },
+                    { symbol: "T", name: "Температура", unit: "К" }
+                ]
+            },
+            {
+                name: "Формула Эйнштейна",
+                formula: "E = m × c²",
+                description: "Эквивалентность массы и энергии",
+                variables: [
+                    { symbol: "E", name: "Энергия", unit: "Дж" },
+                    { symbol: "m", name: "Масса", unit: "кг" },
+                    { symbol: "c", name: "Скорость света", unit: "м/с", value: "299792458" }
+                ]
+            }
+        ];
+
         // Service Worker регистрация
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -279,390 +596,367 @@
         });
         
         // Логика приложения
-        const problemTypeSelect = document.getElementById('problemType');
-        const inputFieldsDiv = document.getElementById('inputFields');
+        const formulaSearch = document.getElementById('formulaSearch');
+        const formulaDatabase = document.getElementById('formulaDatabase');
+        const newVariableName = document.getElementById('newVariableName');
+        const newVariableValue = document.getElementById('newVariableValue');
+        const newVariableUnit = document.getElementById('newVariableUnit');
+        const addVariableBtn = document.getElementById('addVariableBtn');
+        const variablesList = document.getElementById('variablesList');
         const solveBtn = document.getElementById('solveBtn');
+        const clearBtn = document.getElementById('clearBtn');
         const resultSection = document.getElementById('resultSection');
         const solutionStepsDiv = document.getElementById('solutionSteps');
         
-        // Определение полей ввода для разных типов задач
-        const problemFields = {
-            newton: [
-                { id: 'm', label: 'Масса (кг)', unit: 'кг' },
-                { id: 'a', label: 'Ускорение (м/с²)', unit: 'м/с²' },
-                { id: 'F', label: 'Сила (Н)', unit: 'Н' }
-            ],
-            kinematics: [
-                { id: 'v0', label: 'Начальная скорость (м/с)', unit: 'м/с' },
-                { id: 'v', label: 'Конечная скорость (м/с)', unit: 'м/с' },
-                { id: 'a', label: 'Ускорение (м/с²)', unit: 'м/с²' },
-                { id: 't', label: 'Время (с)', unit: 'с' },
-                { id: 's', label: 'Путь (м)', unit: 'м' }
-            ],
-            energy: [
-                { id: 'm', label: 'Масса (кг)', unit: 'кг' },
-                { id: 'h', label: 'Высота (м)', unit: 'м' },
-                { id: 'v', label: 'Скорость (м/с)', unit: 'м/с' },
-                { id: 'E', label: 'Энергия (Дж)', unit: 'Дж' }
-            ],
-            electrostatics: [
-                { id: 'q1', label: 'Заряд 1 (Кл)', unit: 'Кл' },
-                { id: 'q2', label: 'Заряд 2 (Кл)', unit: 'Кл' },
-                { id: 'r', label: 'Расстояние (м)', unit: 'м' },
-                { id: 'F', label: 'Сила (Н)', unit: 'Н' }
-            ],
-            thermodynamics: [
-                { id: 'm', label: 'Масса (кг)', unit: 'кг' },
-                { id: 'c', label: 'Удельная теплоемкость (Дж/кг·К)', unit: 'Дж/кг·К' },
-                { id: 'ΔT', label: 'Изменение температуры (К)', unit: 'К' },
-                { id: 'Q', label: 'Теплота (Дж)', unit: 'Дж' }
-            ],
-            optics: [
-                { id: 'f', label: 'Фокусное расстояние (м)', unit: 'м' },
-                { id: 'd_o', label: 'Расстояние до объекта (м)', unit: 'м' },
-                { id: 'd_i', label: 'Расстояние до изображения (м)', unit: 'м' }
-            ]
-        };
+        let variables = [];
         
-        // Генерация полей ввода при изменении типа задачи
-        problemTypeSelect.addEventListener('change', generateInputFields);
-        
-        function generateInputFields() {
-            const problemType = problemTypeSelect.value;
-            const fields = problemFields[problemType];
+        // Загрузка базы формул
+        function loadFormulaDatabase() {
+            formulaDatabase.innerHTML = '';
             
-            inputFieldsDiv.innerHTML = '';
-            
-            fields.forEach(field => {
-                const fieldDiv = document.createElement('div');
-                fieldDiv.className = 'form-group';
+            physicsFormulas.forEach(formula => {
+                const formulaItem = document.createElement('div');
+                formulaItem.className = 'formula-item';
                 
-                const label = document.createElement('label');
-                label.textContent = field.label;
-                label.htmlFor = field.id;
+                formulaItem.innerHTML = `
+                    <div><strong>${formula.name}</strong></div>
+                    <div class="formula">${formula.formula}</div>
+                    <div>${formula.description}</div>
+                    <div style="margin-top: 5px; font-size: 0.9rem; color: #666;">
+                        Переменные: ${formula.variables.map(v => `${v.symbol} (${v.name})`).join(', ')}
+                    </div>
+                `;
                 
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.id = field.id;
-                input.placeholder = `Введите ${field.label.toLowerCase()}`;
-                input.step = 'any';
+                formulaItem.addEventListener('click', () => {
+                    // Добавляем переменные из формулы
+                    formula.variables.forEach(variable => {
+                        if (!variables.find(v => v.name === variable.symbol)) {
+                            addVariable(
+                                variable.symbol, 
+                                variable.value || '', 
+                                variable.unit
+                            );
+                        }
+                    });
+                });
                 
-                fieldDiv.appendChild(label);
-                fieldDiv.appendChild(input);
-                inputFieldsDiv.appendChild(fieldDiv);
+                formulaDatabase.appendChild(formulaItem);
             });
         }
         
-        // Инициализация полей ввода
-        generateInputFields();
+        // Поиск формул
+        formulaSearch.addEventListener('input', () => {
+            const searchTerm = formulaSearch.value.toLowerCase();
+            const formulaItems = formulaDatabase.querySelectorAll('.formula-item');
+            
+            formulaItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // Добавление переменной
+        addVariableBtn.addEventListener('click', () => {
+            const name = newVariableName.value.trim();
+            const value = newVariableValue.value.trim();
+            const unit = newVariableUnit.value.trim();
+            
+            if (!name) {
+                alert('Введите название переменной');
+                return;
+            }
+            
+            addVariable(name, value, unit);
+            
+            // Очистка полей
+            newVariableName.value = '';
+            newVariableValue.value = '';
+            newVariableUnit.value = '';
+        });
+        
+        function addVariable(name, value, unit) {
+            // Проверяем, нет ли уже такой переменной
+            if (variables.find(v => v.name === name)) {
+                alert(`Переменная ${name} уже существует`);
+                return;
+            }
+            
+            const variable = {
+                name: name,
+                value: value,
+                unit: unit
+            };
+            
+            variables.push(variable);
+            updateVariablesList();
+        }
+        
+        function updateVariablesList() {
+            variablesList.innerHTML = '';
+            
+            if (variables.length === 0) {
+                variablesList.innerHTML = '<p>Нет добавленных переменных</p>';
+                return;
+            }
+            
+            variables.forEach((variable, index) => {
+                const variableItem = document.createElement('div');
+                variableItem.className = 'variable-item';
+                
+                variableItem.innerHTML = `
+                    <div class="variable-name">${variable.name}</div>
+                    <div class="variable-value">
+                        <input type="number" value="${variable.value}" placeholder="Неизвестно" step="any" 
+                               onchange="updateVariableValue(${index}, this.value)">
+                    </div>
+                    <div class="variable-unit">
+                        <input type="text" value="${variable.unit}" placeholder="Ед. изм."
+                               onchange="updateVariableUnit(${index}, this.value)">
+                    </div>
+                    <div class="variable-actions">
+                        <button class="btn-danger" onclick="removeVariable(${index})">Удалить</button>
+                    </div>
+                `;
+                
+                variablesList.appendChild(variableItem);
+            });
+        }
+        
+        // Обновление значений переменных
+        window.updateVariableValue = function(index, value) {
+            variables[index].value = value;
+        };
+        
+        window.updateVariableUnit = function(index, unit) {
+            variables[index].unit = unit;
+        };
+        
+        // Удаление переменной
+        window.removeVariable = function(index) {
+            variables.splice(index, 1);
+            updateVariablesList();
+        };
+        
+        // Очистка всех переменных
+        clearBtn.addEventListener('click', () => {
+            variables = [];
+            updateVariablesList();
+            resultSection.style.display = 'none';
+        });
         
         // Решение задачи
         solveBtn.addEventListener('click', solveProblem);
         
         function solveProblem() {
-            const problemType = problemTypeSelect.value;
-            const inputs = {};
-            
-            // Сбор введенных данных
-            problemFields[problemType].forEach(field => {
-                const inputElement = document.getElementById(field.id);
-                inputs[field.id] = inputElement.value ? parseFloat(inputElement.value) : null;
-            });
-            
-            // Проверка, что достаточно данных для решения
-            const knownValues = Object.values(inputs).filter(val => val !== null).length;
-            if (knownValues < 2) {
-                alert('Введите как минимум два известных значения для решения задачи.');
+            if (variables.length === 0) {
+                alert('Добавьте переменные для решения задачи');
                 return;
             }
             
-            // Решение задачи в зависимости от типа
-            let solution;
-            switch (problemType) {
-                case 'newton':
-                    solution = solveNewtonProblem(inputs);
-                    break;
-                case 'kinematics':
-                    solution = solveKinematicsProblem(inputs);
-                    break;
-                case 'energy':
-                    solution = solveEnergyProblem(inputs);
-                    break;
-                case 'electrostatics':
-                    solution = solveElectrostaticsProblem(inputs);
-                    break;
-                case 'thermodynamics':
-                    solution = solveThermodynamicsProblem(inputs);
-                    break;
-                case 'optics':
-                    solution = solveOpticsProblem(inputs);
-                    break;
-                default:
-                    solution = { error: 'Неизвестный тип задачи' };
+            // Проверяем, что есть как минимум одна неизвестная
+            const unknownVariables = variables.filter(v => !v.value);
+            if (unknownVariables.length === 0) {
+                alert('Все переменные имеют значения. Нечего вычислять.');
+                return;
             }
             
-            // Отображение решения
+            // Проверяем, что есть как минимум две известные переменные
+            const knownVariables = variables.filter(v => v.value);
+            if (knownVariables.length < 2) {
+                alert('Для решения задачи нужно как минимум две известные переменные');
+                return;
+            }
+            
+            // Поиск подходящих формул
+            const suitableFormulas = findSuitableFormulas();
+            
+            if (suitableFormulas.length === 0) {
+                displaySolution({
+                    error: 'Не удалось найти подходящую формулу для решения задачи. Проверьте введенные переменные.'
+                });
+                return;
+            }
+            
+            // Решаем задачу с помощью найденных формул
+            const solution = solveWithFormulas(suitableFormulas);
             displaySolution(solution);
         }
         
-        // Функции решения задач
-        function solveNewtonProblem(inputs) {
-            const { m, a, F } = inputs;
-            const steps = [];
+        function findSuitableFormulas() {
+            const variableNames = variables.map(v => v.name);
             
-            steps.push({
-                text: 'Используем второй закон Ньютона: F = m × a',
-                formula: 'F = m × a'
+            return physicsFormulas.filter(formula => {
+                const formulaVariables = formula.variables.map(v => v.symbol);
+                
+                // Проверяем, что все переменные формулы присутствуют в задаче
+                const hasAllVariables = formulaVariables.every(v => 
+                    variableNames.includes(v) || 
+                    formula.variables.find(fv => fv.symbol === v && fv.value)
+                );
+                
+                // Проверяем, что есть как минимум одна неизвестная переменная из формулы
+                const hasUnknownVariable = formulaVariables.some(v => {
+                    const variable = variables.find(vr => vr.name === v);
+                    return !variable || !variable.value;
+                });
+                
+                return hasAllVariables && hasUnknownVariable;
+            });
+        }
+        
+        function solveWithFormulas(suitableFormulas) {
+            const steps = [];
+            const results = {};
+            
+            // Пробуем решить с помощью каждой подходящей формулы
+            for (const formula of suitableFormulas) {
+                const formulaVariables = formula.variables.map(v => v.symbol);
+                const knownInFormula = formulaVariables.filter(v => {
+                    const variable = variables.find(vr => vr.name === v);
+                    return variable && variable.value;
+                });
+                
+                // Если в формуле достаточно известных переменных, решаем её
+                if (knownInFormula.length >= formulaVariables.length - 1) {
+                    steps.push({
+                        text: `Используем формулу: ${formula.name}`,
+                        formula: formula.formula,
+                        description: formula.description
+                    });
+                    
+                    // Решаем формулу
+                    const formulaResult = solveFormula(formula, steps);
+                    Object.assign(results, formulaResult);
+                    
+                    // Обновляем значения переменных
+                    for (const [key, value] of Object.entries(formulaResult)) {
+                        const variableIndex = variables.findIndex(v => v.name === key);
+                        if (variableIndex !== -1) {
+                            variables[variableIndex].value = value;
+                        }
+                    }
+                    
+                    updateVariablesList();
+                }
+            }
+            
+            return {
+                steps: steps,
+                results: results
+            };
+        }
+        
+        function solveFormula(formula, steps) {
+            const results = {};
+            const formulaText = formula.formula;
+            
+            // Создаем объект с значениями переменных
+            const values = {};
+            formula.variables.forEach(v => {
+                // Ищем значение в переменных задачи или в константах формулы
+                const variable = variables.find(vr => vr.name === v.symbol);
+                if (variable && variable.value) {
+                    values[v.symbol] = parseFloat(variable.value);
+                } else if (v.value) {
+                    values[v.symbol] = parseFloat(v.value);
+                } else {
+                    values[v.symbol] = null;
+                }
             });
             
-            if (F === null) {
-                const result = m * a;
-                steps.push({
-                    text: `Подставляем известные значения: F = ${m} кг × ${a} м/с²`,
-                    formula: `F = ${m} × ${a}`
-                });
-                steps.push({
-                    text: `Вычисляем силу: F = ${result} Н`,
-                    formula: `F = ${result} Н`
-                });
-                
-                return {
-                    type: 'newton',
-                    result: { F: result },
-                    steps: steps
-                };
-            } else if (m === null) {
-                const result = F / a;
-                steps.push({
-                    text: `Выражаем массу: m = F / a`,
-                    formula: 'm = F / a'
-                });
-                steps.push({
-                    text: `Подставляем известные значения: m = ${F} Н / ${a} м/с²`,
-                    formula: `m = ${F} / ${a}`
-                });
-                steps.push({
-                    text: `Вычисляем массу: m = ${result} кг`,
-                    formula: `m = ${result} кг`
-                });
-                
-                return {
-                    type: 'newton',
-                    result: { m: result },
-                    steps: steps
-                };
-            } else if (a === null) {
-                const result = F / m;
-                steps.push({
-                    text: `Выражаем ускорение: a = F / m`,
-                    formula: 'a = F / m'
-                });
-                steps.push({
-                    text: `Подставляем известные значения: a = ${F} Н / ${m} кг`,
-                    formula: `a = ${F} / ${m}`
-                });
-                steps.push({
-                    text: `Вычисляем ускорение: a = ${result} м/с²`,
-                    formula: `a = ${result} м/с²`
-                });
-                
-                return {
-                    type: 'newton',
-                    result: { a: result },
-                    steps: steps
-                };
-            }
-        }
-        
-        function solveKinematicsProblem(inputs) {
-            const { v0, v, a, t, s } = inputs;
-            const steps = [];
-            const results = {};
-            
-            // Определяем, что нужно найти
-            const unknowns = [];
-            if (v0 === null) unknowns.push('v0');
-            if (v === null) unknowns.push('v');
-            if (a === null) unknowns.push('a');
-            if (t === null) unknowns.push('t');
-            if (s === null) unknowns.push('s');
-            
-            // Простой случай: равномерное движение
-            if (a === 0 || a === null) {
-                if (v !== null && t !== null && s === null) {
-                    const result = v * t;
-                    steps.push({
-                        text: 'При равномерном движении путь вычисляется по формуле: s = v × t',
-                        formula: 's = v × t'
-                    });
-                    steps.push({
-                        text: `Подставляем известные значения: s = ${v} м/с × ${t} с`,
-                        formula: `s = ${v} × ${t}`
-                    });
-                    steps.push({
-                        text: `Вычисляем путь: s = ${result} м`,
-                        formula: `s = ${result} м`
-                    });
-                    
-                    results.s = result;
-                }
-            }
-            // Случай равноускоренного движения
-            else {
-                if (v0 !== null && a !== null && t !== null && v === null) {
-                    const result = v0 + a * t;
-                    steps.push({
-                        text: 'Скорость при равноускоренном движении: v = v₀ + a × t',
-                        formula: 'v = v₀ + a × t'
-                    });
-                    steps.push({
-                        text: `Подставляем известные значения: v = ${v0} м/с + ${a} м/с² × ${t} с`,
-                        formula: `v = ${v0} + ${a} × ${t}`
-                    });
-                    steps.push({
-                        text: `Вычисляем скорость: v = ${result} м/с`,
-                        formula: `v = ${result} м/с`
-                    });
-                    
-                    results.v = result;
+            // Определяем неизвестную переменную
+            let unknownVariable = null;
+            for (const v of formula.variables) {
+                if (!values[v.symbol] && !v.value) {
+                    unknownVariable = v.symbol;
+                    break;
                 }
             }
             
-            return {
-                type: 'kinematics',
-                result: results,
-                steps: steps
-            };
-        }
-        
-        function solveEnergyProblem(inputs) {
-            // Упрощенная реализация для демонстрации
-            const { m, h, v, E } = inputs;
-            const steps = [];
-            const results = {};
-            
-            if (m !== null && h !== null && E === null) {
-                const g = 9.8; // ускорение свободного падения
-                const result = m * g * h;
-                steps.push({
-                    text: 'Потенциальная энергия вычисляется по формуле: E = m × g × h',
-                    formula: 'E = m × g × h'
-                });
-                steps.push({
-                    text: `Подставляем известные значения: E = ${m} кг × 9.8 м/с² × ${h} м`,
-                    formula: `E = ${m} × 9.8 × ${h}`
-                });
-                steps.push({
-                    text: `Вычисляем энергию: E = ${result.toFixed(2)} Дж`,
-                    formula: `E = ${result.toFixed(2)} Дж`
-                });
-                
-                results.E = result;
+            if (!unknownVariable) {
+                return results;
             }
             
-            return {
-                type: 'energy',
-                result: results,
-                steps: steps
-            };
-        }
-        
-        function solveElectrostaticsProblem(inputs) {
-            // Упрощенная реализация для демонстрации
-            const { q1, q2, r, F } = inputs;
-            const steps = [];
-            const results = {};
-            const k = 9e9; // постоянная Кулона
-            
-            if (q1 !== null && q2 !== null && r !== null && F === null) {
-                const result = k * Math.abs(q1 * q2) / (r * r);
-                steps.push({
-                    text: 'Закон Кулона: F = k × |q₁ × q₂| / r²',
-                    formula: 'F = k × |q₁ × q₂| / r²'
-                });
-                steps.push({
-                    text: `Подставляем известные значения: F = 9×10⁹ × |${q1} × ${q2}| / ${r}²`,
-                    formula: `F = 9×10⁹ × |${q1} × ${q2}| / ${r}²`
-                });
-                steps.push({
-                    text: `Вычисляем силу: F = ${result.toExponential(2)} Н`,
-                    formula: `F = ${result.toExponential(2)} Н`
-                });
-                
-                results.F = result;
+            // Решаем формулу в зависимости от типа
+            switch (formula.name) {
+                case "Второй закон Ньютона":
+                    if (unknownVariable === 'F') {
+                        const result = values['m'] * values['a'];
+                        steps.push({
+                            text: `Вычисляем силу: F = m × a = ${values['m']} × ${values['a']}`,
+                            formula: `F = ${values['m']} × ${values['a']} = ${result}`
+                        });
+                        results['F'] = result;
+                    } else if (unknownVariable === 'm') {
+                        const result = values['F'] / values['a'];
+                        steps.push({
+                            text: `Вычисляем массу: m = F / a = ${values['F']} / ${values['a']}`,
+                            formula: `m = ${values['F']} / ${values['a']} = ${result}`
+                        });
+                        results['m'] = result;
+                    } else if (unknownVariable === 'a') {
+                        const result = values['F'] / values['m'];
+                        steps.push({
+                            text: `Вычисляем ускорение: a = F / m = ${values['F']} / ${values['m']}`,
+                            formula: `a = ${values['F']} / ${values['m']} = ${result}`
+                        });
+                        results['a'] = result;
+                    }
+                    break;
+                    
+                case "Закон Кулона":
+                    if (unknownVariable === 'F') {
+                        const result = values['k'] * Math.abs(values['q₁'] * values['q₂']) / (values['r'] * values['r']);
+                        steps.push({
+                            text: `Вычисляем силу: F = k × |q₁ × q₂| / r² = ${values['k']} × |${values['q₁']} × ${values['q₂']}| / ${values['r']}²`,
+                            formula: `F = ${values['k']} × |${values['q₁']} × ${values['q₂']}| / ${values['r']}² = ${result}`
+                        });
+                        results['F'] = result;
+                    }
+                    break;
+                    
+                case "Кинетическая энергия":
+                    if (unknownVariable === 'E_k') {
+                        const result = (values['m'] * values['v'] * values['v']) / 2;
+                        steps.push({
+                            text: `Вычисляем кинетическую энергию: E_k = (m × v²) / 2 = (${values['m']} × ${values['v']}²) / 2`,
+                            formula: `E_k = (${values['m']} × ${values['v']}²) / 2 = ${result}`
+                        });
+                        results['E_k'] = result;
+                    } else if (unknownVariable === 'm') {
+                        const result = (2 * values['E_k']) / (values['v'] * values['v']);
+                        steps.push({
+                            text: `Вычисляем массу: m = (2 × E_k) / v² = (2 × ${values['E_k']}) / ${values['v']}²`,
+                            formula: `m = (2 × ${values['E_k']}) / ${values['v']}² = ${result}`
+                        });
+                        results['m'] = result;
+                    } else if (unknownVariable === 'v') {
+                        const result = Math.sqrt((2 * values['E_k']) / values['m']);
+                        steps.push({
+                            text: `Вычисляем скорость: v = √(2 × E_k / m) = √(2 × ${values['E_k']} / ${values['m']})`,
+                            formula: `v = √(2 × ${values['E_k']} / ${values['m']}) = ${result}`
+                        });
+                        results['v'] = result;
+                    }
+                    break;
+                    
+                // Добавьте здесь обработку других формул по аналогии
+                    
+                default:
+                    // Общий метод решения формул
+                    steps.push({
+                        text: `Решаем формулу относительно ${unknownVariable}`,
+                        formula: formula.formula
+                    });
+                    // В реальном приложении здесь должна быть более сложная логика
+                    // для парсинга и решения произвольных формул
             }
             
-            return {
-                type: 'electrostatics',
-                result: results,
-                steps: steps
-            };
-        }
-        
-        function solveThermodynamicsProblem(inputs) {
-            // Упрощенная реализация для демонстрации
-            const { m, c, ΔT, Q } = inputs;
-            const steps = [];
-            const results = {};
-            
-            if (m !== null && c !== null && ΔT !== null && Q === null) {
-                const result = m * c * ΔT;
-                steps.push({
-                    text: 'Количество теплоты: Q = m × c × ΔT',
-                    formula: 'Q = m × c × ΔT'
-                });
-                steps.push({
-                    text: `Подставляем известные значения: Q = ${m} кг × ${c} Дж/кг·К × ${ΔT} К`,
-                    formula: `Q = ${m} × ${c} × ${ΔT}`
-                });
-                steps.push({
-                    text: `Вычисляем теплоту: Q = ${result} Дж`,
-                    formula: `Q = ${result} Дж`
-                });
-                
-                results.Q = result;
-            }
-            
-            return {
-                type: 'thermodynamics',
-                result: results,
-                steps: steps
-            };
-        }
-        
-        function solveOpticsProblem(inputs) {
-            // Упрощенная реализация для демонстрации
-            const { f, d_o, d_i } = inputs;
-            const steps = [];
-            const results = {};
-            
-            if (f !== null && d_o !== null && d_i === null) {
-                const result = 1 / (1/f - 1/d_o);
-                steps.push({
-                    text: 'Формула тонкой линзы: 1/f = 1/dₒ + 1/dᵢ',
-                    formula: '1/f = 1/dₒ + 1/dᵢ'
-                });
-                steps.push({
-                    text: `Выражаем dᵢ: dᵢ = 1 / (1/f - 1/dₒ)`,
-                    formula: 'dᵢ = 1 / (1/f - 1/dₒ)'
-                });
-                steps.push({
-                    text: `Подставляем известные значения: dᵢ = 1 / (1/${f} - 1/${d_o})`,
-                    formula: `dᵢ = 1 / (1/${f} - 1/${d_o})`
-                });
-                steps.push({
-                    text: `Вычисляем расстояние до изображения: dᵢ = ${result.toFixed(2)} м`,
-                    formula: `dᵢ = ${result.toFixed(2)} м`
-                });
-                
-                results.d_i = result;
-            }
-            
-            return {
-                type: 'optics',
-                result: results,
-                steps: steps
-            };
+            return results;
         }
         
         // Отображение решения
@@ -682,6 +976,14 @@
                     const stepDiv = document.createElement('div');
                     stepDiv.className = 'solution-step';
                     
+                    if (step.description) {
+                        const descP = document.createElement('p');
+                        descP.textContent = step.description;
+                        descP.style.fontStyle = 'italic';
+                        descP.style.color = '#666';
+                        stepDiv.appendChild(descP);
+                    }
+                    
                     const textP = document.createElement('p');
                     textP.textContent = step.text;
                     stepDiv.appendChild(textP);
@@ -697,42 +999,40 @@
                 });
                 
                 // Отображаем итоговый результат
-                const resultDiv = document.createElement('div');
-                resultDiv.className = 'result';
-                
-                let resultText = 'Результат: ';
-                const resultEntries = Object.entries(solution.result);
-                resultEntries.forEach(([key, value], index) => {
-                    const field = problemFields[solution.type].find(f => f.id === key);
-                    if (field) {
-                        resultText += `${field.label}: ${value} ${field.unit}`;
+                if (Object.keys(solution.results).length > 0) {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'result';
+                    
+                    let resultText = 'Найдены значения: ';
+                    const resultEntries = Object.entries(solution.results);
+                    resultEntries.forEach(([key, value], index) => {
+                        const variable = variables.find(v => v.name === key);
+                        const unit = variable ? variable.unit : '';
+                        resultText += `${key} = ${value} ${unit}`;
                         if (index < resultEntries.length - 1) {
                             resultText += ', ';
                         }
-                    }
-                });
-                
-                resultDiv.textContent = resultText;
-                solutionStepsDiv.appendChild(resultDiv);
+                    });
+                    
+                    resultDiv.textContent = resultText;
+                    solutionStepsDiv.appendChild(resultDiv);
+                } else {
+                    const noResultDiv = document.createElement('div');
+                    noResultDiv.className = 'solution-step';
+                    noResultDiv.style.backgroundColor = '#fff3e0';
+                    noResultDiv.style.borderLeft = '4px solid var(--warning)';
+                    noResultDiv.textContent = 'Не удалось вычислить неизвестные переменные. Проверьте введенные данные.';
+                    solutionStepsDiv.appendChild(noResultDiv);
+                }
             }
             
             resultSection.style.display = 'block';
             resultSection.scrollIntoView({ behavior: 'smooth' });
         }
         
-        // Загрузка примера
-        function loadExample(problemType, values) {
-            problemTypeSelect.value = problemType;
-            generateInputFields();
-            
-            // Заполняем поля значениями из примера
-            for (const [key, value] of Object.entries(values)) {
-                const input = document.getElementById(key);
-                if (input) {
-                    input.value = value;
-                }
-            }
-        }
+        // Инициализация приложения
+        loadFormulaDatabase();
+        updateVariablesList();
     </script>
 </body>
 </html>
